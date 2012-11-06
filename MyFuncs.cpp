@@ -37,6 +37,9 @@ Mat PreProc(Mat I){
   //erode
   erode( I, I, element ); //enlarge black surface area
 
+  imshow("Preprocessed", I);
+  waitKey();
+
   return I;
 }
 
@@ -107,14 +110,8 @@ Mat UserDrawnSelection(Mat img){
   return img;
 }
 
-vector<Mat> SeperateTermDef(Mat img){
+vector<Mat> SeperateTermDef(Mat I){
 //Seperate left column of text (the terms) in an image from the right column of text (the definitions)
-
-  //image preprocessing (binarize, erode, etc) 
-  Mat I = PreProc(img);
-  imshow("Preprocessed", I);
-  waitKey();
-  destroyWindow("Preprocessed");
 
   int channels = I.channels();
   int nRows = I.rows * channels; // channels should always be 1 in this function but this is still here for reusability
@@ -122,14 +119,15 @@ vector<Mat> SeperateTermDef(Mat img){
   uchar* p; // will store row of pixels
   vector<Mat> img_pieces;
 
-  int i, j; // for loops
+  int j; // for loops
+  int i = 0;
   int count = 0;
   int cons = 0;
   int thres = nRows / 100; //amount of ink in a column(1%) 
   int consmax = (nCols / 100)*2;
   int middle;
 
-  // Stage 1: find leading whitespace left of text
+  // Stage 1: find leading whitespace left of text stop when black is found
   do
   {
     count = 0;
@@ -146,7 +144,7 @@ vector<Mat> SeperateTermDef(Mat img){
   count = 0;
   cons = 0;
 
-  // Stage 2: scanning rightward, find first chunk of text
+  // Stage 2: scanning rightward, continue until white is found
   while (cons < consmax && i < nCols) /// looking for consecutive cols of mostely white
   {
     count = 0;
@@ -160,7 +158,7 @@ vector<Mat> SeperateTermDef(Mat img){
     i++;
   }
 
-  // Stage 3: scanning rightward, find first chunck of whitespace
+  // Stage 3: scanning rightward, find black
   do
   {
     count = 0;
@@ -385,5 +383,6 @@ std::string TesseractLine(Mat img) {
 }
 
 void cleanUp() {
+  destroyWindow("Preprocessed");
   system("rm temp.*");
 }
